@@ -1,10 +1,26 @@
 import { Request, Response } from "express";
 import { query } from "../db";
+import { authenticateToken } from "../utils/middleware";
 
 const bcrypt = require("bcryptjs");
 const userRouter = require("express").Router();
 
-// Get all user information
+const posts = [
+  {
+    username: "test1",
+    title: "Post 1",
+  },
+  {
+    username: "Jim",
+    title: "Post 2",
+  },
+];
+
+userRouter.get("/posts", authenticateToken, (req: Request, res: Response) => {
+  res.json(posts.filter((post) => post.username === req.user.username));
+});
+
+// Get user information
 userRouter.get("/", async (req: Request, res: Response) => {
   try {
     const result = await query("SELECT id, username FROM users");
@@ -30,7 +46,7 @@ userRouter.post("/", async (req: Request, res: Response) => {
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
     const postRequest = await query(
-      `INSERT INTO Users (first_name, last_name, email, username, passwordHash) VALUES ($1, $2, $3, $4, $5) RETURNING username`,
+      `INSERT INTO Users (first_name, last_name, email, username, password_hash) VALUES ($1, $2, $3, $4, $5) RETURNING username`,
       [first_name, last_name, email, username, passwordHash]
     );
     return res.status(201).json({
