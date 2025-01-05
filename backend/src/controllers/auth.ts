@@ -57,11 +57,28 @@ authRouter.post(
       );
     }
 
-    const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET);
+    if (!process.env.REFRESH_TOKEN_SECRET) {
+      throw new Error(
+        "REFRESH_TOKEN_SECRET is not set in environment variables."
+      );
+    }
 
-    res.status(200).json({ accessToken: `Bearer ${accessToken}` });
+    const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+      expiresIn: "30s",
+    });
+    const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET);
+
+    res.status(200).json({
+      accessToken: `Bearer ${accessToken}`,
+      refreshToken: refreshToken,
+    });
     return;
   }
 );
+
+authRouter.post("/token", (req: Request, res: Response) => {
+  const refreshToken = req.body.token;
+  return;
+});
 
 module.exports = authRouter;
