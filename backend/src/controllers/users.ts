@@ -11,7 +11,7 @@ const posts = [
     title: "Post 1",
   },
   {
-    username: "Jim",
+    username: "test123",
     title: "Post 2",
   },
 ];
