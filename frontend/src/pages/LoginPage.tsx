@@ -19,6 +19,8 @@ function LoginPage() {
     try {
       const response = await axios.post("/auth/login", postData);
       if (response.status === 200) {
+        const accessToken = response.data.accessToken;
+        localStorage.setItem("accessToken", accessToken);
         navigate("/home");
       } else {
         console.log("Error logging in.");
