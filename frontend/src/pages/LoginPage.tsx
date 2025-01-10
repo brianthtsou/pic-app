@@ -16,6 +16,10 @@ function LoginPage() {
     }
   };
 
+  const handleRegister = (): void => {
+    navigate("/register");
+  };
+
   return (
     <>
       <div className="login-title">
@@ -39,6 +43,9 @@ function LoginPage() {
           />
           <button type="submit">Submit</button>
         </form>
+      </div>
+      <div>
+        <button onClick={handleRegister}>Register</button>
       </div>
     </>
   );
