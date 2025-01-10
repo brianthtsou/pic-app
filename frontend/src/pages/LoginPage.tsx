@@ -16,7 +16,7 @@ function LoginPage() {
     }
   };
 
-  const handleRegister = (): void => {
+  const handleMoveToRegisterPage = (): void => {
     navigate("/register");
   };
 
@@ -45,7 +45,7 @@ function LoginPage() {
         </form>
       </div>
       <div>
-        <button onClick={handleRegister}>Register</button>
+        <button onClick={handleMoveToRegisterPage}>Register</button>
       </div>
     </>
   );

@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { isAxiosError } from "axios";
+import axios from "../services/axios";
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -9,11 +11,34 @@ function RegisterPage() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
 
-  const handleSubmit = (event: React.FormEvent<EventTarget>): void => {
+  const handleSubmit = async (
+    event: React.FormEvent<EventTarget>
+  ): Promise<void> => {
     event.preventDefault();
     const registerSuccessful = true; // Placeholder for actual register check (make sure all forms are filled!)
     if (registerSuccessful) {
-      navigate("/login"); // Redirect to Home on success
+      const postData = {
+        username: username,
+        password: password,
+        first_name: firstName,
+        last_name: lastName,
+        email: email,
+      };
+      try {
+        const response = await axios.post("/users", postData);
+        if (response.status === 201) {
+          console.log("Register success!");
+          navigate("/login");
+        } else {
+          console.log("Error adding data to database");
+        }
+      } catch (error) {
+        if (isAxiosError(error)) {
+          console.error("Failed to post data:", error.message);
+        } else {
+          console.error("An unknown error occurred");
+        }
+      }
     } else {
       alert("Register failed!");
     }
