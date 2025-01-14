@@ -22,7 +22,11 @@ const s3Upload = multer({
     s3: s3Client,
     bucket: bucketName,
     key: function (req, file, cb) {
-      console.log(file);
+      console.log("Uploading file:");
+      console.log("Field Name:", file.fieldname);
+      console.log("Original Name:", file.originalname);
+      console.log("MIME Type:", file.mimetype);
+      console.log("Size:", file.size);
       cb(null, `${Date.now()}-${file.originalname}`);
     },
   }),
