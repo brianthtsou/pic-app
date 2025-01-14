@@ -1,19 +1,42 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { isAxiosError } from "axios";
+import axios from "../services/axios";
 
 function LoginPage() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (event: React.FormEvent<EventTarget>): void => {
+  const handleSubmit = async (
+    event: React.FormEvent<EventTarget>
+  ): Promise<void> => {
     event.preventDefault();
-    const loginSuccessful = true; // Placeholder for actual login check
-    if (loginSuccessful) {
-      navigate("/home"); // Redirect to Home on success
-    } else {
-      alert("Login failed!");
+    const postData = {
+      username: username,
+      password: password,
+    };
+    try {
+      const response = await axios.post("/auth/login", postData);
+      if (response.status === 200) {
+        const accessToken = response.data.accessToken;
+        localStorage.setItem("accessToken", accessToken);
+        navigate("/home");
+      } else {
+        console.log("Error logging in.");
+        alert("Login failed!");
+      }
+    } catch (error) {
+      if (isAxiosError(error)) {
+        console.error("Failed to post data:", error.message);
+      } else {
+        console.error("An unknown error occurred");
+      }
     }
+  };
+
+  const handleMoveToRegisterPage = (): void => {
+    navigate("/register");
   };
 
   return (
@@ -39,6 +62,9 @@ function LoginPage() {
           />
           <button type="submit">Submit</button>
         </form>
+      </div>
+      <div>
+        <button onClick={handleMoveToRegisterPage}>Register</button>
       </div>
     </>
   );
