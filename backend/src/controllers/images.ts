@@ -1,4 +1,5 @@
 import { Request, Response, Router } from "express";
+import { MulterS3File } from "../types";
 import { query } from "../db";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
@@ -9,6 +10,10 @@ import s3Upload from "../utils/s3_upload";
 const imagesRouter = Router();
 
 dotenv.config({ path: "../.env" });
+
+imagesRouter.get("/upload", (req: Request, res: Response): any => {
+  return res.status(200).send("OK");
+});
 
 imagesRouter.post(
   "/upload",
@@ -25,10 +30,28 @@ imagesRouter.post(
   async (req: Request, res: Response) => {
     try {
       const file = req.file;
+      const user = req.user;
+      console.log(user);
+      console.log(file);
       if (!file) {
         res.status(400).send("File not uploaded.");
         return;
       }
+      const { key, bucket, size, mimetype, originalname } =
+        file as unknown as MulterS3File;
+      const description = req.body.description || "";
+
+      const userIdQuery = await query(
+        "SELECT user_id FROM users WHERE username = ($1)",
+        [req.user.username]
+      );
+
+      const userId = userIdQuery.rows[0].user_id;
+      console.log(userId);
+      const result = await query(
+        "INSERT INTO images (user_id, s3_key, bucket_name, file_name, file_size, file_type, description) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+        [userId, key, bucket, originalname, size, mimetype, description]
+      );
       res.status(200).json({ message: "File uploaded successfully.", file });
       return;
     } catch (err) {
