@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import { authenticateToken } from "../utils/middleware";
 import s3Upload from "../utils/s3_upload";
+import s3Get from "../utils/s3_get";
 
 const imagesRouter = Router();
 
@@ -14,6 +15,34 @@ dotenv.config({ path: "../.env" });
 imagesRouter.get("/upload", (req: Request, res: Response): any => {
   return res.status(200).send("OK");
 });
+
+imagesRouter.get(
+  "/",
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    const userIdQuery = await query(
+      "SELECT user_id FROM users WHERE username = ($1)",
+      [req.user.username]
+    );
+    const userId = userIdQuery.rows[0].user_id;
+
+    const imagesS3KeyQuery = await query(
+      "SELECT s3_key FROM images WHERE user_id = ($1)",
+      [userId]
+    );
+
+    const imagesS3KeyRows = imagesS3KeyQuery.rows;
+
+    const photoUrlPromises = imagesS3KeyRows.map(async (e) => {
+      const url = await s3Get(e.s3_key);
+      return { signed_url: url };
+    });
+
+    const photoUrlObjects = await Promise.all(photoUrlPromises);
+
+    res.status(200).json({ photoUrls: photoUrlObjects });
+  }
+);
 
 imagesRouter.post(
   "/upload",
