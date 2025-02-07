@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { isAxiosError } from "axios";
+// import { isAxiosError } from "axios";
 import axios from "../services/axios";
 
 interface Post {
   title: string;
   username: string;
-  id: Number;
+  id: number;
 }
 
 function HomePage() {
