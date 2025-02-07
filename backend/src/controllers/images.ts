@@ -27,7 +27,7 @@ imagesRouter.get(
     const userId = userIdQuery.rows[0].user_id;
 
     const imagesS3KeyQuery = await query(
-      "SELECT s3_key FROM images WHERE user_id = ($1)",
+      "SELECT s3_key, image_id FROM images WHERE user_id = ($1)",
       [userId]
     );
 
@@ -35,7 +35,7 @@ imagesRouter.get(
 
     const photoUrlPromises = imagesS3KeyRows.map(async (e) => {
       const url = await s3Get(e.s3_key);
-      return { signed_url: url };
+      return { image_id: e.image_id, signed_url: url };
     });
 
     const photoUrlObjects = await Promise.all(photoUrlPromises);
