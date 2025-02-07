@@ -7,10 +7,12 @@ const userRouter = require("express").Router();
 
 const posts = [
   {
+    id: 1,
     username: "test1",
     title: "Post 1",
   },
   {
+    id: 2,
     username: "test123",
     title: "Post 2",
   },
