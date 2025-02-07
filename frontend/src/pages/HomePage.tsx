@@ -7,6 +7,7 @@ import axios from "../services/axios";
 interface Post {
   title: string;
   username: string;
+  id: Number;
 }
 
 function HomePage() {
@@ -38,7 +39,7 @@ function HomePage() {
         <h1>Welcome to the pic app!</h1>
       </div>
       {userPosts.map((post) => (
-        <div>
+        <div key={post.id}>
           <h3>{post.title}</h3>
         </div>
       ))}
