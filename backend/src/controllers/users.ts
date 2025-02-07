@@ -23,7 +23,7 @@ userRouter.get("/posts", authenticateToken, (req: Request, res: Response) => {
 // Get user information
 userRouter.get("/", async (req: Request, res: Response) => {
   try {
-    const result = await query("SELECT id, username FROM users");
+    const result = await query("SELECT user_id, username FROM users");
     res.status(200).json(result.rows);
   } catch (err) {
     console.error("Database error:", err);
