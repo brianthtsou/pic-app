@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { query } from "../db";
 import { authenticateToken } from "../utils/middleware";
+import { supabase } from "../supabase";
 
 const bcrypt = require("bcryptjs");
 const userRouter = require("express").Router();
@@ -25,8 +26,9 @@ userRouter.get("/posts", authenticateToken, (req: Request, res: Response) => {
 // Get user information
 userRouter.get("/", async (req: Request, res: Response) => {
   try {
-    const result = await query("SELECT user_id, username FROM users");
-    res.status(200).json(result.rows);
+    const result = await supabase.from("users").select("*");
+    console.log(result);
+    res.status(200).json(result);
   } catch (err) {
     console.error("Database error:", err);
     res.status(500).send("Error connecting to the database.");
