@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 // import { isAxiosError } from "axios";
@@ -20,6 +20,7 @@ function HomePage() {
   const navigate = useNavigate();
   const [userPosts, setUserPosts] = useState<Post[]>([]);
   const [userImages, setUserImages] = useState<Image[]>([]);
+  const uploadDialog = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,8 +51,13 @@ function HomePage() {
   return (
     <>
       <div className="homepage-title">
-        <h1>Welcome to the pic app!</h1>
+        <h1>Welcome to the pic app!!</h1>
       </div>
+      <dialog ref={uploadDialog}>
+        <button>Close</button>
+        <p>This modal dialog has a groovy backdrop!</p>
+      </dialog>
+      <button>Upload</button>
       {userPosts.map((post) => (
         <div key={post.id}>
           <h3>{post.title}</h3>

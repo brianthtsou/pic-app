@@ -3,6 +3,7 @@ import { query } from "../db";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
+import { supabase } from "../supabase";
 
 const authRouter = Router();
 
@@ -24,15 +25,16 @@ authRouter.post(
     let passwordHashDb: string = "";
 
     try {
-      const result = await query(
-        "SELECT password_hash FROM users WHERE username = ($1)",
-        [username]
-      );
-      if (result.rows.length > 0 && result.rows[0].password_hash) {
-        passwordHashDb = result.rows[0].password_hash;
-      } else {
+      const { data, error } = await supabase
+        .from("users")
+        .select("password_hash")
+        .eq("username", username)
+        .single();
+      if (error || !data) {
         res.status(404).send("User not found.");
         return;
+      } else {
+        passwordHashDb = data.password_hash;
       }
     } catch (err) {
       console.error("Database error:", err);

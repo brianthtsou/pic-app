@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { query } from "../db";
 import { authenticateToken } from "../utils/middleware";
+import { supabase } from "../supabase";
+import { dataAttr } from "@chakra-ui/react/dist/types/utils";
 
 const bcrypt = require("bcryptjs");
 const userRouter = require("express").Router();
@@ -25,11 +27,15 @@ userRouter.get("/posts", authenticateToken, (req: Request, res: Response) => {
 // Get user information
 userRouter.get("/", async (req: Request, res: Response) => {
   try {
-    const result = await query("SELECT user_id, username FROM users");
-    res.status(200).json(result.rows);
+    const { data, error } = await supabase.from("users").select("*");
+    if (error) {
+      console.error("Supabase error:", error);
+      return res.status(500).json({ error: "Supabase query failed" });
+    }
+    res.status(200).json(data);
   } catch (err) {
     console.error("Database error:", err);
-    res.status(500).send("Error connecting to the database.");
+    res.status(500).send("Internal server error.");
   }
 });
 
@@ -47,13 +53,23 @@ userRouter.post("/", async (req: Request, res: Response) => {
     const saltRounds = 10;
     const passwordHash = await bcrypt.hash(password, saltRounds);
 
-    const postRequest = await query(
-      `INSERT INTO Users (first_name, last_name, email, username, password_hash) VALUES ($1, $2, $3, $4, $5) RETURNING username`,
-      [first_name, last_name, email, username, passwordHash]
-    );
+    const { error, data } = await supabase
+      .from("users")
+      .insert({
+        first_name: first_name,
+        last_name: last_name,
+        email: email,
+        username: username,
+        password_hash: passwordHash,
+      })
+      .select();
+    if (error) {
+      console.error("Supabase error:", error);
+      return res.status(500).json({ error: "Supabase query failed" });
+    }
     return res.status(201).json({
       message: "User added successfully.",
-      user: postRequest.rows[0],
+      user: data?.[0]?.username,
     });
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : "Unknown error";
