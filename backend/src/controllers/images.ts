@@ -1,8 +1,5 @@
 import { Request, Response, Router } from "express";
 import { MulterS3File } from "../types";
-import { query } from "../db";
-import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 import { authenticateToken } from "../utils/middleware";
 import s3Upload from "../utils/s3_upload";
@@ -31,7 +28,6 @@ imagesRouter.get(
       res.status(404).send("User not found.");
       return;
     }
-    console.log(userIdQuery);
     const userId = userIdQuery.user_id;
 
     const { data: imagesS3KeyQuery, error: imagesS3KeyQueryError } =
@@ -40,7 +36,6 @@ imagesRouter.get(
         .select("s3_key, image_id")
         .eq("user_id", userId);
 
-    console.log(imagesS3KeyQuery);
     if (imagesS3KeyQueryError || !imagesS3KeyQuery) {
       res.status(404).send("User not found.");
       return;
@@ -96,13 +91,7 @@ imagesRouter.post(
         return;
       }
 
-      // const userIdQuery = await query(
-      //   "SELECT user_id FROM users WHERE username = ($1)",
-      //   [req.user.username]
-      // );
-
       const userId = userIdQuery.user_id;
-      console.log(userId);
 
       const { data: insertQuery, error: insertQueryError } = await supabase
         .from("images")
