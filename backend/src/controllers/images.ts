@@ -7,6 +7,7 @@ import dotenv from "dotenv";
 import { authenticateToken } from "../utils/middleware";
 import s3Upload from "../utils/s3_upload";
 import s3Get from "../utils/s3_get";
+import { supabase } from "../supabase";
 
 const imagesRouter = Router();
 
@@ -20,18 +21,32 @@ imagesRouter.get(
   "/",
   authenticateToken,
   async (req: Request, res: Response) => {
-    const userIdQuery = await query(
-      "SELECT user_id FROM users WHERE username = ($1)",
-      [req.user.username]
-    );
-    const userId = userIdQuery.rows[0].user_id;
+    const { data: userIdQuery, error: userIdQueryError } = await supabase
+      .from("users")
+      .select("user_id")
+      .eq("username", req.user.username)
+      .single();
 
-    const imagesS3KeyQuery = await query(
-      "SELECT s3_key, image_id FROM images WHERE user_id = ($1)",
-      [userId]
-    );
+    if (userIdQueryError || !userIdQuery) {
+      res.status(404).send("User not found.");
+      return;
+    }
+    console.log(userIdQuery);
+    const userId = userIdQuery.user_id;
 
-    const imagesS3KeyRows = imagesS3KeyQuery.rows;
+    const { data: imagesS3KeyQuery, error: imagesS3KeyQueryError } =
+      await supabase
+        .from("images")
+        .select("s3_key, image_id")
+        .eq("user_id", userId);
+
+    console.log(imagesS3KeyQuery);
+    if (imagesS3KeyQueryError || !imagesS3KeyQuery) {
+      res.status(404).send("User not found.");
+      return;
+    }
+
+    const imagesS3KeyRows = imagesS3KeyQuery;
 
     const photoUrlPromises = imagesS3KeyRows.map(async (e) => {
       const url = await s3Get(e.s3_key);
@@ -54,8 +69,8 @@ imagesRouter.post(
     console.log("Body (before multer):", req.body);
     next();
   },
-  authenticateToken,
   s3Upload.single("image"),
+  authenticateToken,
   async (req: Request, res: Response) => {
     try {
       const file = req.file;
@@ -70,17 +85,36 @@ imagesRouter.post(
         file as unknown as MulterS3File;
       const description = req.body.description || "";
 
-      const userIdQuery = await query(
-        "SELECT user_id FROM users WHERE username = ($1)",
-        [req.user.username]
-      );
+      const { data: userIdQuery, error: userIdQueryError } = await supabase
+        .from("users")
+        .select("user_id")
+        .eq("username", req.user.username)
+        .single();
 
-      const userId = userIdQuery.rows[0].user_id;
+      if (userIdQueryError || !userIdQuery) {
+        res.status(404).send("User not found.");
+        return;
+      }
+
+      // const userIdQuery = await query(
+      //   "SELECT user_id FROM users WHERE username = ($1)",
+      //   [req.user.username]
+      // );
+
+      const userId = userIdQuery.user_id;
       console.log(userId);
-      const result = await query(
-        "INSERT INTO images (user_id, s3_key, bucket_name, file_name, file_size, file_type, description) VALUES ($1, $2, $3, $4, $5, $6, $7)",
-        [userId, key, bucket, originalname, size, mimetype, description]
-      );
+
+      const { data: insertQuery, error: insertQueryError } = await supabase
+        .from("images")
+        .insert({
+          user_id: userId,
+          s3_key: key,
+          bucket_name: bucket,
+          file_name: originalname,
+          file_size: size,
+          file_type: mimetype,
+          description: description,
+        });
       res.status(200).json({ message: "File uploaded successfully.", file });
       return;
     } catch (err) {
