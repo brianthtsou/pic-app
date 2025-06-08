@@ -4,6 +4,7 @@ import { useEffect } from "react";
 // import { isAxiosError } from "axios";
 import axios from "../services/axios";
 import SignedURLImage from "@/components/SignedURLImage";
+import ImageUploadButton from "@/components/ImageUploadButton";
 import { useAuth } from "../context/AuthContext";
 
 interface Post {
@@ -59,7 +60,7 @@ function HomePage() {
         <button>Close</button>
         <p>This modal dialog has a groovy backdrop!</p>
       </dialog>
-      <button onClick={handleUpload}>Upload</button>
+      <ImageUploadButton></ImageUploadButton>
       {userPosts.map((post) => (
         <div key={post.id}>
           <h3>{post.title}</h3>
