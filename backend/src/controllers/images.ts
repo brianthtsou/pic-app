@@ -104,6 +104,17 @@ imagesRouter.post(
           file_type: mimetype,
           description: description,
         });
+
+      if (insertQueryError) {
+        console.error("!!! Supabase Insert Error:", insertQueryError);
+        // Send the actual error back to the frontend
+        res.status(400).json({
+          message: "Database insertion failed.",
+          error: insertQueryError,
+        });
+        return;
+      }
+
       res.status(200).json({ message: "File uploaded successfully.", file });
       return;
     } catch (err) {

@@ -4,6 +4,8 @@ import { useEffect } from "react";
 // import { isAxiosError } from "axios";
 import axios from "../services/axios";
 import SignedURLImage from "@/components/SignedURLImage";
+import ImageUploadButton from "@/components/ImageUploadButton";
+import { useAuth } from "../context/AuthContext";
 
 interface Post {
   title: string;
@@ -21,14 +23,12 @@ function HomePage() {
   const [userPosts, setUserPosts] = useState<Post[]>([]);
   const [userImages, setUserImages] = useState<Image[]>([]);
   const uploadDialog = useRef(null);
+  const { logout } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
-      const accessToken = localStorage.getItem("accessToken");
-      axios.defaults.headers.common["Authorization"] = `${accessToken}`;
       try {
         const response = await axios.get("/users/posts");
-        // console.log(response);
         setUserPosts(response.data);
       } catch (error) {
         console.error("Error fetching data", error);
@@ -45,8 +45,11 @@ function HomePage() {
   }, []);
 
   const handleLogout = () => {
+    logout();
     navigate("/login");
   };
+
+  const handleUpload = () => {};
 
   return (
     <>
@@ -57,7 +60,7 @@ function HomePage() {
         <button>Close</button>
         <p>This modal dialog has a groovy backdrop!</p>
       </dialog>
-      <button>Upload</button>
+      <ImageUploadButton></ImageUploadButton>
       {userPosts.map((post) => (
         <div key={post.id}>
           <h3>{post.title}</h3>
