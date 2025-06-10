@@ -2,8 +2,7 @@ import { Request, Response, Router } from "express";
 import { MulterS3File } from "../types";
 import dotenv from "dotenv";
 import { authenticateToken } from "../utils/middleware";
-import s3Upload from "../utils/s3_upload";
-import s3Get from "../utils/s3_get";
+import { s3Upload, s3Get } from "../utils/s3_upload";
 import { supabase } from "../supabase";
 
 const imagesRouter = Router();

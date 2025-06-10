@@ -1,6 +1,11 @@
 import multer from "multer";
 import multerS3 from "multer-s3";
-import { S3Client } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  GetObjectCommand,
+  GetObjectCommandInput,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const bucketName = process.env.AWS_PRIVATE_PIC_BUCKET;
 if (!bucketName) {
@@ -17,7 +22,7 @@ const s3Client = new S3Client({
 });
 
 // Configure multer to use S3
-const s3Upload = multer({
+export const s3Upload = multer({
   storage: multerS3({
     s3: s3Client,
     bucket: bucketName,
@@ -32,4 +37,19 @@ const s3Upload = multer({
   }),
 });
 
-export default s3Upload;
+export const s3Get = async (key: string): Promise<string> => {
+  const getObjectParams: GetObjectCommandInput = {
+    Bucket: process.env.AWS_PRIVATE_PIC_BUCKET,
+    Key: key,
+  };
+
+  const command = new GetObjectCommand(getObjectParams);
+
+  try {
+    const url = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+    return url;
+  } catch (err) {
+    console.error("Error getting signed url.", err);
+    return "Error getting signed url.";
+  }
+};
