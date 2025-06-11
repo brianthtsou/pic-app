@@ -126,7 +126,6 @@ imagesRouter.delete(
       res.status(400).send("Invalid Image ID format.");
       return;
     }
-    console.log(user);
 
     try {
       // retrieve image info from db
@@ -134,6 +133,7 @@ imagesRouter.delete(
         .from("images")
         .select("s3_key")
         .eq("image_id", imageId)
+        .eq("user_id", user.user_id)
         .single();
 
       if (s3KeyQueryError || !s3KeyQuery) {
