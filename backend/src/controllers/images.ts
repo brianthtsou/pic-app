@@ -1,13 +1,11 @@
 import { Request, Response, Router } from "express";
 import { MulterS3File } from "../types";
 import dotenv from "dotenv";
-import { authenticateToken } from "../utils/middleware";
-import { s3Upload, s3Get } from "../utils/s3_upload";
+import { authenticateToken, apiRequestLog } from "../utils/middleware";
+import { s3Upload, s3Get, s3Delete } from "../utils/s3";
 import { supabase } from "../supabase";
 
 const imagesRouter = Router();
-
-dotenv.config({ path: "../.env" });
 
 imagesRouter.get("/upload", (req: Request, res: Response): any => {
   return res.status(200).send("OK");
@@ -55,14 +53,7 @@ imagesRouter.get(
 
 imagesRouter.post(
   "/upload",
-  (req, res, next) => {
-    // Log basic details of the incoming request
-    console.log("Request Method:", req.method);
-    console.log("Request URL:", req.originalUrl);
-    console.log("Headers:", req.headers);
-    console.log("Body (before multer):", req.body);
-    next();
-  },
+  apiRequestLog,
   s3Upload.single("image"),
   authenticateToken,
   async (req: Request, res: Response) => {
@@ -118,6 +109,56 @@ imagesRouter.post(
       return;
     } catch (err) {
       res.status(500).send("Error uploading file. Internal server error.");
+    }
+  }
+);
+
+imagesRouter.delete(
+  "/:imageId",
+  apiRequestLog,
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    const imageId = parseInt(req.params.imageId);
+    const user = req.user;
+    let imageS3Key: string;
+
+    if (isNaN(imageId)) {
+      res.status(400).send("Invalid Image ID format.");
+      return;
+    }
+    console.log(user);
+
+    try {
+      // retrieve image info from db
+      const { data: s3KeyQuery, error: s3KeyQueryError } = await supabase
+        .from("images")
+        .select("s3_key")
+        .eq("image_id", imageId)
+        .single();
+
+      if (s3KeyQueryError || !s3KeyQuery) {
+        res.status(404).send("S3 key not found.");
+        return;
+      }
+      imageS3Key = s3KeyQuery.s3_key;
+
+      // delete image from S3
+      await s3Delete(imageS3Key);
+
+      // delete image data from DB
+      const { error: deleteImageDataError } = await supabase
+        .from("images")
+        .delete()
+        .eq("image_id", imageId);
+
+      if (deleteImageDataError) {
+        throw deleteImageDataError;
+      }
+
+      res.status(200).send("Image deleted successfully from S3 and database.");
+    } catch (err) {
+      console.error("Error during image deletion process:", err);
+      res.status(500).send("Internal server error.");
     }
   }
 );

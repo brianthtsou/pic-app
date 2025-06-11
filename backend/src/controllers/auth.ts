@@ -7,8 +7,6 @@ import { supabase } from "../supabase";
 
 const authRouter = Router();
 
-dotenv.config({ path: "../.env" });
-
 // Authenticate user
 authRouter.post(
   "/login",

@@ -4,6 +4,8 @@ import {
   S3Client,
   GetObjectCommand,
   GetObjectCommandInput,
+  DeleteObjectCommandInput,
+  DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
@@ -50,6 +52,22 @@ export const s3Get = async (key: string): Promise<string> => {
     return url;
   } catch (err) {
     console.error("Error getting signed url.", err);
-    return "Error getting signed url.";
+    throw new Error("Could not generate signed URL.");
+  }
+};
+
+export const s3Delete = async (key: string): Promise<void> => {
+  const deleteObjectParams: DeleteObjectCommandInput = {
+    Bucket: process.env.AWS_PRIVATE_PIC_BUCKET,
+    Key: key,
+  };
+
+  const command = new DeleteObjectCommand(deleteObjectParams);
+
+  try {
+    await s3Client.send(command);
+  } catch (err) {
+    console.error("Error deleting from s3.", err);
+    throw new Error("Could not delete file from S3.");
   }
 };
