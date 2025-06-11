@@ -7,8 +7,6 @@ import { supabase } from "../supabase";
 
 const authRouter = Router();
 
-dotenv.config({ path: "../.env" });
-
 // Authenticate user
 authRouter.post(
   "/login",
@@ -23,11 +21,12 @@ authRouter.post(
 
     // Retrieve password hash from database
     let passwordHashDb: string = "";
+    let userId: number;
 
     try {
       const { data, error } = await supabase
         .from("users")
-        .select("password_hash")
+        .select("password_hash, user_id")
         .eq("username", username)
         .single();
       if (error || !data) {
@@ -35,6 +34,7 @@ authRouter.post(
         return;
       } else {
         passwordHashDb = data.password_hash;
+        userId = data.user_id;
       }
     } catch (err) {
       console.error("Database error:", err);
@@ -51,7 +51,7 @@ authRouter.post(
     }
 
     // If password verified, return access token
-    const user = { username: username };
+    const user = { username: username, user_id: userId };
 
     if (!process.env.ACCESS_TOKEN_SECRET) {
       throw new Error(
