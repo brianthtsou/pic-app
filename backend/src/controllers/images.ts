@@ -83,7 +83,7 @@ imagesRouter.post(
 
       const userId = userIdQuery.user_id;
 
-      const { data: insertQuery, error: insertQueryError } = await supabase
+      const { data: newImage, error: insertQueryError } = await supabase
         .from("images")
         .insert({
           user_id: userId,
@@ -93,7 +93,9 @@ imagesRouter.post(
           file_size: size,
           file_type: mimetype,
           description: description,
-        });
+        })
+        .select()
+        .single();
 
       if (insertQueryError) {
         console.error("!!! Supabase Insert Error:", insertQueryError);
@@ -105,7 +107,7 @@ imagesRouter.post(
         return;
       }
 
-      res.status(200).json({ message: "File uploaded successfully.", file });
+      res.status(201).json(newImage);
       return;
     } catch (err) {
       res.status(500).send("Error uploading file. Internal server error.");

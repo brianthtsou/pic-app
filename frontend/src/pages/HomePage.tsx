@@ -1,7 +1,6 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-// import { isAxiosError } from "axios";
 import axios from "../services/axios";
 import SignedURLImage from "@/components/SignedURLImage";
 import ImageUploadButton from "@/components/ImageUploadButton";
@@ -13,7 +12,7 @@ interface Post {
   id: number;
 }
 
-interface Image {
+export interface Image {
   image_id: number;
   signed_url: string;
 }
@@ -25,22 +24,23 @@ function HomePage() {
   const uploadDialog = useRef(null);
   const { logout } = useAuth();
 
+  const fetchData = async () => {
+    try {
+      const response = await axios.get("/users/posts");
+      setUserPosts(response.data);
+    } catch (error) {
+      console.error("Error fetching data", error);
+    }
+    try {
+      const imageResponse = await axios.get("/images/");
+      console.log(imageResponse.data);
+      setUserImages(imageResponse.data.photoUrls);
+    } catch (error) {
+      console.error("Error fetching images", error);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get("/users/posts");
-        setUserPosts(response.data);
-      } catch (error) {
-        console.error("Error fetching data", error);
-      }
-      try {
-        const imageResponse = await axios.get("/images/");
-        console.log(imageResponse.data);
-        setUserImages(imageResponse.data.photoUrls);
-      } catch (error) {
-        console.error("Error fetching images", error);
-      }
-    };
     fetchData();
   }, []);
 
@@ -49,7 +49,9 @@ function HomePage() {
     navigate("/login");
   };
 
-  const handleUpload = () => {};
+  const handleUploadSuccess = () => {
+    fetchData();
+  };
 
   return (
     <>
@@ -60,7 +62,9 @@ function HomePage() {
         <button>Close</button>
         <p>This modal dialog has a groovy backdrop!</p>
       </dialog>
-      <ImageUploadButton></ImageUploadButton>
+      <ImageUploadButton
+        onUploadSuccess={handleUploadSuccess}
+      ></ImageUploadButton>
       {userPosts.map((post) => (
         <div key={post.id}>
           <h3>{post.title}</h3>
