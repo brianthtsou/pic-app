@@ -5,6 +5,7 @@ import axios from "../services/axios";
 import SignedURLImage from "@/components/SignedURLImage";
 import ImageUploadButton from "@/components/ImageUploadButton";
 import { useAuth } from "../context/AuthContext";
+import ImageDeleteButton from "@/components/ImageDeleteButton";
 
 interface Post {
   title: string;
@@ -53,6 +54,10 @@ function HomePage() {
     fetchData();
   };
 
+  const handleDeleteSuccess = () => {
+    fetchData();
+  };
+
   return (
     <>
       <div className="homepage-title">
@@ -73,6 +78,10 @@ function HomePage() {
       {userImages.map((image) => (
         <div key={image.image_id}>
           <SignedURLImage imageUrl={image.signed_url}></SignedURLImage>
+          <ImageDeleteButton
+            imageId={image.image_id}
+            onDeleteSuccess={handleDeleteSuccess}
+          ></ImageDeleteButton>
         </div>
       ))}
       <button onClick={handleLogout}>Logout</button>
