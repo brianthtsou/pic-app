@@ -1,8 +1,13 @@
 import { useRef, useState } from "react";
-import { isAxiosError } from "axios";
+import { Image } from "../pages/HomePage";
 import axios from "../services/axios";
 
-const ImageUploadButton = () => {
+interface ImageUploadButtonProps {
+  // A function that will receive the new image data from the parent
+  onUploadSuccess: (newImage: Image) => void;
+}
+
+const ImageUploadButton = ({ onUploadSuccess }: ImageUploadButtonProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedFileName, setSelectedFileName] = useState("");
   const [uploadButtonStyle, setUploadButtonStyle] =
@@ -33,7 +38,8 @@ const ImageUploadButton = () => {
     const formData = new FormData();
     formData.append("image", selectedFile);
     try {
-      await axios.post("/images/upload", formData);
+      const response = await axios.post("/images/upload", formData);
+      onUploadSuccess(response.data);
       setSelectedFile(null);
       setSelectedFileName("");
       setUploadButtonStyle({ display: "none" });
