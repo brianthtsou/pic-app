@@ -6,6 +6,7 @@ import SignedURLImage from "@/components/SignedURLImage";
 import ImageUploadButton from "@/components/ImageUploadButton";
 import { useAuth } from "../context/AuthContext";
 import ImageDeleteButton from "@/components/ImageDeleteButton";
+import ImageDetailDialog from "@/components/ImageDetailDialog";
 
 interface Post {
   title: string;
@@ -22,6 +23,10 @@ function HomePage() {
   const navigate = useNavigate();
   const [userPosts, setUserPosts] = useState<Post[]>([]);
   const [userImages, setUserImages] = useState<Image[]>([]);
+  const [imageDialogOpenBool, setImageDialogOpenBool] =
+    useState<boolean>(false);
+  const [imageDialogSelectedPicture, setImageDialogSelectedPicture] =
+    useState<string>("");
   const uploadDialog = useRef(null);
   const { logout } = useAuth();
 
@@ -58,6 +63,14 @@ function HomePage() {
     fetchData();
   };
 
+  const handleImageClick = (imageUrl: string) => {
+    setImageDialogSelectedPicture(imageUrl);
+    setImageDialogOpenBool(true);
+  };
+  const handleDialogClose = () => {
+    setImageDialogOpenBool(false);
+  };
+
   return (
     <>
       <div className="homepage-title">
@@ -77,13 +90,21 @@ function HomePage() {
       ))}
       {userImages.map((image) => (
         <div key={image.image_id}>
-          <SignedURLImage imageUrl={image.signed_url}></SignedURLImage>
+          <SignedURLImage
+            imageUrl={image.signed_url}
+            handleClick={() => handleImageClick(image.signed_url)}
+          ></SignedURLImage>
           <ImageDeleteButton
             imageId={image.image_id}
             onDeleteSuccess={handleDeleteSuccess}
           ></ImageDeleteButton>
         </div>
       ))}
+      <ImageDetailDialog
+        handleClose={handleDialogClose}
+        selectedImageUrl={imageDialogSelectedPicture}
+        open={imageDialogOpenBool}
+      ></ImageDetailDialog>
       <button onClick={handleLogout}>Logout</button>
     </>
   );

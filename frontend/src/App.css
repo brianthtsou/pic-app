@@ -4,6 +4,10 @@
   gap: 10px;
 }
 
+.clickable-element {
+  cursor: pointer;
+}
+
 input {
   width: 100%; /* Ensure inputs take full width of the container */
   max-width: 300px; /* Set a max-width for the input fields */
