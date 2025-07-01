@@ -3,15 +3,23 @@ import DialogTitle from "@mui/material/DialogTitle";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
 import Grid from "@mui/material/Grid";
-import { GridLegacy } from "@mui/material";
+import ImageDeleteButton from "@/components/ImageDeleteButton";
 
 export interface ImageDetailDialogProps {
   open: boolean;
   selectedImageUrl: string;
+  selectedImageId: number | null;
   handleClose: () => void;
+  handleImageDeletion: () => void;
 }
 const ImageDetailDialog = (props: ImageDetailDialogProps) => {
-  const { handleClose, selectedImageUrl, open } = props;
+  const {
+    handleClose,
+    selectedImageUrl,
+    selectedImageId,
+    open,
+    handleImageDeletion,
+  } = props;
 
   return (
     <Dialog onClose={handleClose} open={open} maxWidth="lg" fullWidth>
@@ -27,7 +35,10 @@ const ImageDetailDialog = (props: ImageDetailDialogProps) => {
           ></img>
         </Grid>
         <Grid size={{ xs: 12, sm: 6 }}>
-          <p>Hello</p>
+          <ImageDeleteButton
+            imageId={selectedImageId}
+            onDeleteSuccess={handleImageDeletion}
+          ></ImageDeleteButton>
         </Grid>
       </Grid>
       <IconButton

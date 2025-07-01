@@ -27,6 +27,9 @@ function HomePage() {
     useState<boolean>(false);
   const [imageDialogSelectedPicture, setImageDialogSelectedPicture] =
     useState<string>("");
+  const [imageDialogSelectedImageId, setImageDialogSelectedImageId] = useState<
+    number | null
+  >(null);
   const uploadDialog = useRef(null);
   const { logout } = useAuth();
 
@@ -60,15 +63,19 @@ function HomePage() {
   };
 
   const handleDeleteSuccess = () => {
+    handleDialogClose();
     fetchData();
   };
 
-  const handleImageClick = (imageUrl: string) => {
+  const handleImageClick = (imageUrl: string, imageId: number) => {
     setImageDialogSelectedPicture(imageUrl);
+    setImageDialogSelectedImageId(imageId);
     setImageDialogOpenBool(true);
   };
   const handleDialogClose = () => {
     setImageDialogOpenBool(false);
+    setImageDialogSelectedPicture("");
+    setImageDialogSelectedImageId(null);
   };
 
   return (
@@ -92,7 +99,9 @@ function HomePage() {
         <div key={image.image_id}>
           <SignedURLImage
             imageUrl={image.signed_url}
-            handleClick={() => handleImageClick(image.signed_url)}
+            handleClick={() =>
+              handleImageClick(image.signed_url, image.image_id)
+            }
           ></SignedURLImage>
           <ImageDeleteButton
             imageId={image.image_id}
@@ -102,7 +111,9 @@ function HomePage() {
       ))}
       <ImageDetailDialog
         handleClose={handleDialogClose}
+        handleImageDeletion={handleDeleteSuccess}
         selectedImageUrl={imageDialogSelectedPicture}
+        selectedImageId={imageDialogSelectedImageId}
         open={imageDialogOpenBool}
       ></ImageDetailDialog>
       <button onClick={handleLogout}>Logout</button>
