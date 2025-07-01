@@ -103,10 +103,6 @@ function HomePage() {
               handleImageClick(image.signed_url, image.image_id)
             }
           ></SignedURLImage>
-          <ImageDeleteButton
-            imageId={image.image_id}
-            onDeleteSuccess={handleDeleteSuccess}
-          ></ImageDeleteButton>
         </div>
       ))}
       <ImageDetailDialog
