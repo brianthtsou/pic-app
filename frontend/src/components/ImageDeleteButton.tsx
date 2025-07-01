@@ -2,7 +2,7 @@ import { FC } from "react";
 import axios from "../services/axios";
 
 interface ImageDeleteButtonProps {
-  imageId: number;
+  imageId: number | null;
   onDeleteSuccess: () => void;
 }
 

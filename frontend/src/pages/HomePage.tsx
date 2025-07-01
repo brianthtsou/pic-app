@@ -6,6 +6,7 @@ import SignedURLImage from "@/components/SignedURLImage";
 import ImageUploadButton from "@/components/ImageUploadButton";
 import { useAuth } from "../context/AuthContext";
 import ImageDeleteButton from "@/components/ImageDeleteButton";
+import ImageDetailDialog from "@/components/ImageDetailDialog";
 
 interface Post {
   title: string;
@@ -22,6 +23,13 @@ function HomePage() {
   const navigate = useNavigate();
   const [userPosts, setUserPosts] = useState<Post[]>([]);
   const [userImages, setUserImages] = useState<Image[]>([]);
+  const [imageDialogOpenBool, setImageDialogOpenBool] =
+    useState<boolean>(false);
+  const [imageDialogSelectedPicture, setImageDialogSelectedPicture] =
+    useState<string>("");
+  const [imageDialogSelectedImageId, setImageDialogSelectedImageId] = useState<
+    number | null
+  >(null);
   const uploadDialog = useRef(null);
   const { logout } = useAuth();
 
@@ -55,7 +63,19 @@ function HomePage() {
   };
 
   const handleDeleteSuccess = () => {
+    handleDialogClose();
     fetchData();
+  };
+
+  const handleImageClick = (imageUrl: string, imageId: number) => {
+    setImageDialogSelectedPicture(imageUrl);
+    setImageDialogSelectedImageId(imageId);
+    setImageDialogOpenBool(true);
+  };
+  const handleDialogClose = () => {
+    setImageDialogOpenBool(false);
+    setImageDialogSelectedPicture("");
+    setImageDialogSelectedImageId(null);
   };
 
   return (
@@ -77,13 +97,21 @@ function HomePage() {
       ))}
       {userImages.map((image) => (
         <div key={image.image_id}>
-          <SignedURLImage imageUrl={image.signed_url}></SignedURLImage>
-          <ImageDeleteButton
-            imageId={image.image_id}
-            onDeleteSuccess={handleDeleteSuccess}
-          ></ImageDeleteButton>
+          <SignedURLImage
+            imageUrl={image.signed_url}
+            handleClick={() =>
+              handleImageClick(image.signed_url, image.image_id)
+            }
+          ></SignedURLImage>
         </div>
       ))}
+      <ImageDetailDialog
+        handleClose={handleDialogClose}
+        handleImageDeletion={handleDeleteSuccess}
+        selectedImageUrl={imageDialogSelectedPicture}
+        selectedImageId={imageDialogSelectedImageId}
+        open={imageDialogOpenBool}
+      ></ImageDetailDialog>
       <button onClick={handleLogout}>Logout</button>
     </>
   );
