@@ -39,5 +39,35 @@ commentsRouter.post(
   ":/imageId",
   apiRequestLog,
   authenticateToken,
-  async (req: Request, res: Response) => {}
+  async (req: Request, res: Response) => {
+    const imageId = parseInt(req.params.imageId);
+
+    if (isNaN(imageId)) {
+      res.status(400).send("Invalid Image ID format.");
+      return;
+    }
+
+    try {
+      const user = req.user;
+      const { comment_text } = req.body;
+      const { data: newComment, error: newCommentError } = await supabase
+        .from("comments")
+        .insert({
+          image_id: imageId,
+          user_id: user.user_id,
+          comment_text: comment_text,
+        })
+        .select()
+        .single();
+
+      if (newCommentError || !newComment) {
+        res.status(404).send("Comment posting failed.");
+        return;
+      }
+      res.status(201).json(newComment);
+    } catch (err) {
+      console.error("Error during comment posting process:", err);
+      res.status(500).send("Internal server error.");
+    }
+  }
 );
