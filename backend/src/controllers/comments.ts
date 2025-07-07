@@ -60,9 +60,6 @@ commentsRouter.post(
         .select()
         .single();
 
-      console.log("hi");
-      console.log(newComment);
-
       if (newCommentError || !newComment) {
         res
           .status(404)
@@ -74,6 +71,50 @@ commentsRouter.post(
       console.error("Error during comment posting process:", err);
       res.status(500).send("Internal server error.");
     }
+  }
+);
+
+commentsRouter.delete(
+  "/:commentId",
+  apiRequestLog,
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    const commentId = parseInt(req.params.commentId);
+
+    if (isNaN(commentId)) {
+      res.status(400).send("Invalid Comment ID format.");
+      return;
+    }
+
+    const userId = req.user.user_id;
+
+    const { data: userValidationQuery, error: userValidationError } =
+      await supabase
+        .from("comments")
+        .select("user_id")
+        .eq("comment_id", commentId)
+        .eq("user_id", userId)
+        .single();
+
+    if (userValidationError || !userValidationQuery) {
+      res.status(404).json({
+        message: "User validation failed.",
+        error: userValidationError,
+      });
+      return;
+    }
+
+    const { data: deleteCommentQuery, error: deleteCommentError } =
+      await supabase.from("comments").delete().eq("comment_id", commentId);
+
+    if (deleteCommentError) {
+      res.status(404).json({
+        message: "Comment deletion failed.",
+        error: deleteCommentError,
+      });
+      return;
+    }
+    res.status(200).send("Comment deleted successfully.");
   }
 );
 
