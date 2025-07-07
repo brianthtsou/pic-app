@@ -5,7 +5,7 @@ import { authenticateToken, apiRequestLog } from "../utils/middleware";
 const commentsRouter = Router();
 
 commentsRouter.get(
-  ":/imageId",
+  "/:imageId",
   apiRequestLog,
   authenticateToken,
   async (req: Request, res: Response) => {
@@ -36,7 +36,7 @@ commentsRouter.get(
 );
 
 commentsRouter.post(
-  ":/imageId",
+  "/:imageId",
   apiRequestLog,
   authenticateToken,
   async (req: Request, res: Response) => {
@@ -60,8 +60,13 @@ commentsRouter.post(
         .select()
         .single();
 
+      console.log("hi");
+      console.log(newComment);
+
       if (newCommentError || !newComment) {
-        res.status(404).send("Comment posting failed.");
+        res
+          .status(404)
+          .json({ message: "Comment posting failed.", error: newCommentError });
         return;
       }
       res.status(201).json(newComment);
@@ -71,3 +76,5 @@ commentsRouter.post(
     }
   }
 );
+
+module.exports = commentsRouter;
