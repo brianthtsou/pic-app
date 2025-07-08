@@ -4,6 +4,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
 import Grid from "@mui/material/Grid";
 import ImageDeleteButton from "@/components/ImageDeleteButton";
+import ImageCommentForm from "@/components/ImageCommentForm";
+import axios from "../services/axios";
 
 export interface ImageDetailDialogProps {
   open: boolean;
@@ -21,6 +23,19 @@ const ImageDetailDialog = (props: ImageDetailDialogProps) => {
     handleImageDeletion,
   } = props;
 
+  // finish function
+  const fetchData = () => {};
+
+  const handleCommentPost = async (commentText: string) => {
+    try {
+      const commentData = { comment_text: commentText };
+      await axios.post(`/comments/${selectedImageId}`, commentData);
+      fetchData(); // need to finish function
+    } catch (error) {
+      console.error("Error posting comment data", error);
+    }
+  };
+
   return (
     <Dialog onClose={handleClose} open={open} maxWidth="lg" fullWidth>
       <Grid container spacing={2} sx={{ p: 2 }}>
@@ -35,6 +50,9 @@ const ImageDetailDialog = (props: ImageDetailDialogProps) => {
           ></img>
         </Grid>
         <Grid size={{ xs: 12, sm: 6 }}>
+          <ImageCommentForm
+            onCommentPost={handleCommentPost}
+          ></ImageCommentForm>
           <ImageDeleteButton
             imageId={selectedImageId}
             onDeleteSuccess={handleImageDeletion}
