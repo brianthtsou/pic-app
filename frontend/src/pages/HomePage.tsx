@@ -5,19 +5,8 @@ import axios from "../services/axios";
 import SignedURLImage from "@/components/SignedURLImage";
 import ImageUploadButton from "@/components/ImageUploadButton";
 import { useAuth } from "../context/AuthContext";
-import ImageDeleteButton from "@/components/ImageDeleteButton";
 import ImageDetailDialog from "@/components/ImageDetailDialog";
-
-interface Post {
-  title: string;
-  username: string;
-  id: number;
-}
-
-export interface Image {
-  image_id: number;
-  signed_url: string;
-}
+import { Post, Image } from "../types";
 
 function HomePage() {
   const navigate = useNavigate();

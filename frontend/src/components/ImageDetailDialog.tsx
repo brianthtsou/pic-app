@@ -1,11 +1,14 @@
 import Dialog from "@mui/material/Dialog";
+import { useState, useEffect } from "react";
 import DialogTitle from "@mui/material/DialogTitle";
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from "@mui/material/IconButton";
 import Grid from "@mui/material/Grid";
 import ImageDeleteButton from "@/components/ImageDeleteButton";
 import ImageCommentForm from "@/components/ImageCommentForm";
+import ImageCommentList from "@/components/ImageCommentList";
 import axios from "../services/axios";
+import { Comment, Image } from "../types";
 
 export interface ImageDetailDialogProps {
   open: boolean;
@@ -14,6 +17,7 @@ export interface ImageDetailDialogProps {
   handleClose: () => void;
   handleImageDeletion: () => void;
 }
+
 const ImageDetailDialog = (props: ImageDetailDialogProps) => {
   const {
     handleClose,
@@ -23,14 +27,36 @@ const ImageDetailDialog = (props: ImageDetailDialogProps) => {
     handleImageDeletion,
   } = props;
 
+  const [comments, setComments] = useState<Comment[]>([]);
+
+  useEffect(() => {
+    fetchCommentsData();
+  }, [open, selectedImageId]);
+
   // finish function
-  const fetchData = () => {};
+  const fetchCommentsData = async () => {
+    if (open && selectedImageId) {
+      const fetchCommentsData = async () => {
+        try {
+          const response = await axios.get(`/comments/${selectedImageId}`);
+          setComments(response.data);
+        } catch (err) {
+          console.error("Error retrieving comment data", err);
+          setComments([]);
+        }
+      };
+
+      fetchCommentsData();
+    } else {
+      setComments([]);
+    }
+  };
 
   const handleCommentPost = async (commentText: string) => {
     try {
       const commentData = { comment_text: commentText };
       await axios.post(`/comments/${selectedImageId}`, commentData);
-      fetchData(); // need to finish function
+      fetchCommentsData(); // need to finish function
     } catch (error) {
       console.error("Error posting comment data", error);
     }
@@ -50,6 +76,7 @@ const ImageDetailDialog = (props: ImageDetailDialogProps) => {
           ></img>
         </Grid>
         <Grid size={{ xs: 12, sm: 6 }}>
+          <ImageCommentList allComments={comments}></ImageCommentList>
           <ImageCommentForm
             onCommentPost={handleCommentPost}
           ></ImageCommentForm>

@@ -33,6 +33,7 @@ const ImageCommentForm = (props: ImageCommentFormProps) => {
         id="standard-basic"
         placeholder="Comment.."
         variant="standard"
+        value={commentText}
         onChange={(e) => setCommentText(e.target.value)}
       />
       <IconButton sx={{ p: 0 }} type="submit">
