@@ -19,7 +19,9 @@ commentsRouter.get(
     try {
       const { data: commentsQuery, error: commentsQueryError } = await supabase
         .from("comments")
-        .select("comment_text, user_id, created_at, users ( username )")
+        .select(
+          "comment_text, comment_id, user_id, created_at, users ( username )"
+        )
         .eq("image_id", imageId)
         .order("created_at", { ascending: true });
 
