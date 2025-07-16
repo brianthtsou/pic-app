@@ -33,7 +33,6 @@ const ImageDetailDialog = (props: ImageDetailDialogProps) => {
     fetchCommentsData();
   }, [open, selectedImageId]);
 
-  // finish function
   const fetchCommentsData = async () => {
     if (open && selectedImageId) {
       const fetchCommentsData = async () => {
@@ -56,11 +55,22 @@ const ImageDetailDialog = (props: ImageDetailDialogProps) => {
     try {
       const commentData = { comment_text: commentText };
       await axios.post(`/comments/${selectedImageId}`, commentData);
-      fetchCommentsData(); // need to finish function
+      fetchCommentsData();
     } catch (error) {
       console.error("Error posting comment data", error);
     }
   };
+
+  const handleCommentDelete = async (commentId: number) => {
+    try {
+      await axios.delete(`/comments/${commentId}`);
+      fetchCommentsData();
+    } catch (error) {
+      console.error("Error deleting comment.", error);
+    }
+  };
+
+  const handleCommentEdit = async (commentId: number) => {};
 
   return (
     <Dialog onClose={handleClose} open={open} maxWidth="lg" fullWidth>
@@ -76,7 +86,11 @@ const ImageDetailDialog = (props: ImageDetailDialogProps) => {
           ></img>
         </Grid>
         <Grid size={{ xs: 12, sm: 6 }}>
-          <ImageCommentList allComments={comments}></ImageCommentList>
+          <ImageCommentList
+            allComments={comments}
+            onCommentDelete={handleCommentDelete}
+            onCommentEdit={handleCommentEdit}
+          ></ImageCommentList>
           <ImageCommentForm
             onCommentPost={handleCommentPost}
           ></ImageCommentForm>
