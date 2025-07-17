@@ -90,6 +90,55 @@ commentsRouter.delete(
 
     const userId = req.user.user_id;
 
+    try {
+      const { data: userValidationQuery, error: userValidationError } =
+        await supabase
+          .from("comments")
+          .select("user_id")
+          .eq("comment_id", commentId)
+          .eq("user_id", userId)
+          .single();
+
+      if (userValidationError || !userValidationQuery) {
+        res.status(404).json({
+          message: "User validation failed.",
+          error: userValidationError,
+        });
+        return;
+      }
+
+      const { data: deleteCommentQuery, error: updateCommentError } =
+        await supabase.from("comments").delete().eq("comment_id", commentId);
+
+      if (updateCommentError) {
+        res.status(404).json({
+          message: "Comment deletion failed.",
+          error: updateCommentError,
+        });
+        return;
+      }
+      res.status(200).send("Comment deleted successfully.");
+    } catch (err) {
+      console.error("Error during comment updating process:", err);
+      res.status(500).send("Internal server error.");
+    }
+  }
+);
+
+commentsRouter.patch(
+  "/:commentId",
+  apiRequestLog,
+  authenticateToken,
+  async (req: Request, res: Response) => {
+    const commentId = parseInt(req.params.commentId);
+
+    if (isNaN(commentId)) {
+      res.status(400).send("Invalid Comment ID format.");
+      return;
+    }
+
+    const userId = req.user.user_id;
+
     const { data: userValidationQuery, error: userValidationError } =
       await supabase
         .from("comments")
@@ -106,17 +155,21 @@ commentsRouter.delete(
       return;
     }
 
-    const { data: deleteCommentQuery, error: deleteCommentError } =
-      await supabase.from("comments").delete().eq("comment_id", commentId);
+    const updatedCommentText = req.params.commentText;
 
-    if (deleteCommentError) {
+    const { data: updatedComment, error: updateCommentError } = await supabase
+      .from("comments")
+      .update({ comment_text: updatedCommentText })
+      .eq("comment_id", commentId);
+
+    if (updateCommentError) {
       res.status(404).json({
-        message: "Comment deletion failed.",
-        error: deleteCommentError,
+        message: "Comment update failed.",
+        error: updateCommentError,
       });
       return;
     }
-    res.status(200).send("Comment deleted successfully.");
+    res.status(201).json(updatedComment);
   }
 );
 

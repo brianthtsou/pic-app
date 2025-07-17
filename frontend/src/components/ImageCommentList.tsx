@@ -13,7 +13,7 @@ import MenuItem from "@mui/material/MenuItem";
 interface ImageCommentListProps {
   allComments: Comment[];
   onCommentDelete: (commentId: number) => void;
-  onCommentEdit: (commentId: number) => void;
+  onCommentEdit: (commentId: number, commentText: string) => void;
 }
 
 const ImageCommentList = (props: ImageCommentListProps) => {
@@ -40,7 +40,7 @@ const ImageCommentList = (props: ImageCommentListProps) => {
 
   const handleEdit = () => {
     if (selectedCommentId) {
-      onCommentEdit(selectedCommentId);
+      onCommentEdit(selectedCommentId, "");
     } else {
       console.error("Failed to edit comment: no comment ID selected.");
     }

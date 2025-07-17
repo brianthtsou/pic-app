@@ -73,7 +73,22 @@ const ImageDetailDialog = (props: ImageDetailDialogProps) => {
     }
   };
 
-  const handleCommentEdit = async (commentId: number) => {};
+  const handleCommentEdit = async (commentId: number, commentText: string) => {
+    try {
+      const commentData = { comment_text: commentText };
+      const response = await axios.put(`/comments/${commentId}`, commentData);
+      setComments((prevComments) => {
+        return prevComments.map((comment) => {
+          if (comment.comment_id === response.data.comment_id) {
+            return response.data;
+          }
+          return comment;
+        });
+      });
+    } catch (err) {
+      console.error("Error updating comment", err);
+    }
+  };
 
   return (
     <Dialog onClose={handleClose} open={open} maxWidth="lg" fullWidth>
