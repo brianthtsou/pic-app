@@ -30,32 +30,33 @@ const ImageDetailDialog = (props: ImageDetailDialogProps) => {
   const [comments, setComments] = useState<Comment[]>([]);
 
   useEffect(() => {
-    fetchCommentsData();
-  }, [open, selectedImageId]);
+    const fetchComments = async () => {
+      try {
+        console.log(`Fetching comments for image ID: ${selectedImageId}`);
+        const response = await axios.get(`/comments/${selectedImageId}`);
+        setComments(response.data);
+      } catch (err) {
+        console.error("Error retrieving comment data", err);
+        setComments([]);
+      }
+    };
 
-  const fetchCommentsData = async () => {
     if (open && selectedImageId) {
-      const fetchCommentsData = async () => {
-        try {
-          const response = await axios.get(`/comments/${selectedImageId}`);
-          setComments(response.data);
-        } catch (err) {
-          console.error("Error retrieving comment data", err);
-          setComments([]);
-        }
-      };
-
-      fetchCommentsData();
+      fetchComments();
     } else {
       setComments([]);
     }
-  };
+  }, [open, selectedImageId]);
 
   const handleCommentPost = async (commentText: string) => {
     try {
       const commentData = { comment_text: commentText };
-      await axios.post(`/comments/${selectedImageId}`, commentData);
-      fetchCommentsData();
+      const response = await axios.post(
+        `/comments/${selectedImageId}`,
+        commentData
+      );
+      const newComment = response.data;
+      setComments((prevComments) => [...prevComments, newComment]);
     } catch (error) {
       console.error("Error posting comment data", error);
     }
@@ -64,7 +65,9 @@ const ImageDetailDialog = (props: ImageDetailDialogProps) => {
   const handleCommentDelete = async (commentId: number) => {
     try {
       await axios.delete(`/comments/${commentId}`);
-      fetchCommentsData();
+      setComments((prevComments) =>
+        prevComments.filter((comment) => comment.comment_id !== commentId)
+      );
     } catch (error) {
       console.error("Error deleting comment.", error);
     }
